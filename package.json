@@ -4,7 +4,6 @@
   "description": "Eslint plugin to force specifying captured variables in a closure",
   "main": "lib/index.js",
   "scripts": {
-    "start-tutorial": "rimraf \"src/rules/**/*\" && rimraf src/index.ts && npm un @typescript-eslint/parser",
     "clean": "rimraf lib",
     "prebuild": "rimraf node_modules/@types/eslint/node_modules/@types/estree",
     "build": "tsc",

@@ -2,7 +2,7 @@ import { AST, Rule, Scope } from "eslint";
 import * as ESTree from "estree";
 
 /** regex for a tagged comment */
-const taggedVarsRe = /^\s*eslint-no-implicit-closure(\s*\((.*)\))?/;
+const taggedVarsRe = /^\s*eslint-capture(\s*\((.*)\))?/;
 
 /** test if one range is inside another, used to see if variable in scope */
 function isInsideRange(
@@ -26,7 +26,7 @@ const noImplicitClosures: Rule.RuleModule = {
     type: "problem",
     docs: {
       description:
-          "disallow closing around variables for functions tagged with `eslint-no-implicit-closures`",
+          "disallow closing around variables for functions tagged with `eslint-capture`",
       category: "Variables",
       recommended: false,
       url: "https://github.com/edgarinvillegas/eslint-plugin-capture",
@@ -34,11 +34,11 @@ const noImplicitClosures: Rule.RuleModule = {
     messages: {
       noScope: "tagged a function without a scope",
       reference:
-          "reference to variable {{ variable }} in an `eslint-no-implicit-closures` function",
+          "reference to variable {{ variable }} in an `eslint-capture` function",
       function:
-          "function tagged with `eslint-no-implicit-closures` closes variables: {{ variables }}",
+          "function tagged with `eslint-capture` closes variables: {{ variables }}",
       declaration:
-          "declared variable {{ variable }} referenced in an `eslint-no-implicit-closures` function",
+          "declared variable {{ variable }} referenced in an `eslint-capture` function",
     },
     schema: [
       {

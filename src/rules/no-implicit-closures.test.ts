@@ -11,7 +11,7 @@ function closureWithoutTag() {
 }
 
 function closureWithinTaggedScope() {
-  // eslint-no-implicit-closure
+  // eslint-capture
   function outer() {
     const x = 5;
     function foo() {
@@ -25,7 +25,7 @@ function closureWithinTaggedScope() {
 
 function taggedClosure() {
   const x = 5;
-  // eslint-no-implicit-closure
+  // eslint-capture
   function foo() {
     return x;
   }
@@ -33,14 +33,14 @@ function taggedClosure() {
 
 function taggedArrowClosure() {
   const x = 5;
-  // eslint-no-implicit-closure
+  // eslint-capture
   const foo = () => x;
 }
 
 function taggedExpressionClosure() {
   const x = 5;
   const foo = {
-    // eslint-no-implicit-closure
+    // eslint-capture
     bar() {
       return x;
     },
@@ -50,11 +50,11 @@ function taggedExpressionClosure() {
 function taggedDuplicatedClosure() {
   const x = 5;
   const y = 7;
-  // eslint-no-implicit-closure
+  // eslint-capture
   function foo() {
     return x + y + y;
   }
-  // eslint-no-implicit-closure
+  // eslint-capture
   function bar() {
     return x;
   }
@@ -63,11 +63,11 @@ function taggedDuplicatedClosure() {
 function correctlyTaggedDuplicatedClosure() {
   const x = 5;
   const y = 7;
-  // eslint-no-implicit-closure (x,y)
+  // eslint-capture (x,y)
   function foo() {
     return x + y + y;
   }
-  // eslint-no-implicit-closure (x)
+  // eslint-capture (x)
   function bar() {
     return x;
   }
@@ -76,11 +76,11 @@ function correctlyTaggedDuplicatedClosure() {
 function inCorrectlyTaggedDuplicatedClosure() {
   const x = 5;
   const y = 7;
-  // eslint-no-implicit-closure (y)
+  // eslint-capture (y)
   function foo() {
     return x + y + y;
   }
-  // eslint-no-implicit-closure ()
+  // eslint-capture ()
   function bar() {
     return x;
   }
