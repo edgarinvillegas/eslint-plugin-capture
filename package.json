@@ -1,7 +1,7 @@
 {
-  "name": "@quramy/eslint-plugin-tutorial",
+  "name": "@edgarin/eslint-plugin-capture",
   "version": "1.0.0",
-  "description": "A tutorial repository to create your first eslint rule",
+  "description": "Eslint plugin to force specifying captured variables in a closure",
   "main": "lib/index.js",
   "scripts": {
     "start-tutorial": "rimraf \"src/rules/**/*\" && rimraf src/index.ts && npm un @typescript-eslint/parser",
@@ -24,7 +24,7 @@
     "typescript",
     "example"
   ],
-  "author": "Quramy",
+  "author": "Edgar Villegas <edgar.villegas@hotmail.com>, Erik Brinkman <erik.brinkman@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/eslint": "8.2.2",
