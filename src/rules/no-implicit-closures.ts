@@ -2,10 +2,7 @@ import { AST, Rule, Scope } from "eslint";
 import * as ESTree from "estree";
 
 /** regex for a tagged comment */
-// const tagged = /^\s*eslint-no-implicit-closure\b/;
 const taggedVarsRe = /^\s*eslint-no-implicit-closure(\s*\((.*)\))?/;
-// a.match(/^\s*sagaz(\s*\((.*)\))?/)[2]
-// .match(/^\s*eslint-no-implicit-closure\s*\((.*)\)/)[1].split(',')
 
 /** test if one range is inside another, used to see if variable in scope */
 function isInsideRange(
@@ -29,19 +26,19 @@ const noImplicitClosures: Rule.RuleModule = {
     type: "problem",
     docs: {
       description:
-          "disallow closing around variables for functions tagged with `eslint-no-closure`",
+          "disallow closing around variables for functions tagged with `eslint-no-implicit-closures`",
       category: "Variables",
       recommended: false,
-      url: "https://github.com/erikbrinkman/eslint-plugin-no-closure",
+      url: "https://github.com/edgarinvillegas/eslint-plugin-capture",
     },
     messages: {
       noScope: "tagged a function without a scope",
       reference:
-          "reference to variable {{ variable }} in an `eslint-no-closure` function",
+          "reference to variable {{ variable }} in an `eslint-no-implicit-closures` function",
       function:
-          "function tagged with `eslint-no-closure` closes variables: {{ variables }}",
+          "function tagged with `eslint-no-implicit-closures` closes variables: {{ variables }}",
       declaration:
-          "declared variable {{ variable }} referenced in an `eslint-no-closure` function",
+          "declared variable {{ variable }} referenced in an `eslint-no-implicit-closures` function",
     },
     schema: [
       {
@@ -80,7 +77,7 @@ const noImplicitClosures: Rule.RuleModule = {
       return str_vars.split(',').map(x => x.trim());
     }
 
-    /** return if a node is considered tagged */
+    /** return the tagged variables a node has */
     function isTagged(node: ESTree.Node): string[] | null {
       // first we check if any preceeding comments start with the line
       const comments = sourceCode.getCommentsBefore(node);
@@ -90,7 +87,6 @@ const noImplicitClosures: Rule.RuleModule = {
         }*/
         const taggedVars = getTaggedVars(comment.value);
         if (taggedVars) {
-          // console.log('taggedVars: ', taggedVars);
           return taggedVars;
         }
       }
@@ -119,7 +115,6 @@ const noImplicitClosures: Rule.RuleModule = {
             // tagged.test(token.value)
             (taggedVars = getTaggedVars(token.value))
         ) {
-          // console.log('taggedVars: ', taggedVars);
           // return true;
           return taggedVars;
         }
@@ -191,10 +186,6 @@ const noImplicitClosures: Rule.RuleModule = {
       if (closedVariables.size) {
         closedFuncs.set(node, closedVariables);
       }
-      /*const forbiddenVariables = new Set([...closedVariables].filter(x => !taggedVariables.includes(x.name)));
-      if (forbiddenVariables.size) {
-        closedFuncs.set(node, forbiddenVariables);
-      }*/
     }
 
     return {
