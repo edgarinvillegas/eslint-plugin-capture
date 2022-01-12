@@ -1,5 +1,5 @@
 import { RuleTester } from "eslint";
-import noImplicitClosure from "./no-implicit-closures";
+import noImplicitClosure from "./explicit-closures";
 
 // valid
 

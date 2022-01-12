@@ -1,7 +1,7 @@
-import noImplicitClosures from './rules/no-implicit-closures';
+import explicitClosures from './rules/explicit-closures';
 
 export = {
   rules: {
-    "no-implicit-closures": noImplicitClosures,
+    "explicit-closures": explicitClosures,
   },
 };

@@ -21,7 +21,7 @@ function summarizeVariables(variables: Iterable<Scope.Variable>): string {
   return sortedNames.join(", ");
 }
 
-const noImplicitClosures: Rule.RuleModule = {
+const explicitClosures: Rule.RuleModule = {
   meta: {
     type: "problem",
     docs: {
@@ -217,4 +217,4 @@ const noImplicitClosures: Rule.RuleModule = {
   },
 };
 
-export default noImplicitClosures;
+export default explicitClosures;
