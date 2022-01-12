@@ -1,9 +1,9 @@
 import noLiteral from "./rules/no-literal";
-import { rules } from './rules/no-tagged-closures';
+import noImplicitClosures from './rules/no-implicit-closures';
 
 export = {
   rules: {
     "no-literal": noLiteral,
-    "no-tagged-closures": rules["no-tagged-closures"]
+    "no-implicit-closures": noImplicitClosures,
   },
 };

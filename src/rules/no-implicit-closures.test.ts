@@ -1,5 +1,5 @@
 import { RuleTester } from "eslint";
-import { rules } from "./no-tagged-closures";
+import noImplicitClosure from "./no-implicit-closures";
 
 // valid
 
@@ -11,7 +11,7 @@ function closureWithoutTag() {
 }
 
 function closureWithinTaggedScope() {
-  // eslint-no-closure
+  // eslint-no-implicit-closure
   function outer() {
     const x = 5;
     function foo() {
@@ -25,7 +25,7 @@ function closureWithinTaggedScope() {
 
 function taggedClosure() {
   const x = 5;
-  // eslint-no-closure
+  // eslint-no-implicit-closure
   function foo() {
     return x;
   }
@@ -33,14 +33,14 @@ function taggedClosure() {
 
 function taggedArrowClosure() {
   const x = 5;
-  // eslint-no-closure
+  // eslint-no-implicit-closure
   const foo = () => x;
 }
 
 function taggedExpressionClosure() {
   const x = 5;
   const foo = {
-    // eslint-no-closure
+    // eslint-no-implicit-closure
     bar() {
       return x;
     },
@@ -50,15 +50,43 @@ function taggedExpressionClosure() {
 function taggedDuplicatedClosure() {
   const x = 5;
   const y = 7;
-  // eslint-no-closure
+  // eslint-no-implicit-closure
   function foo() {
     return x + y + y;
   }
-  // eslint-no-closure
+  // eslint-no-implicit-closure
   function bar() {
     return x;
   }
 }
+
+function correctlyTaggedDuplicatedClosure() {
+  const x = 5;
+  const y = 7;
+  // eslint-no-implicit-closure (x,y)
+  function foo() {
+    return x + y + y;
+  }
+  // eslint-no-implicit-closure (x)
+  function bar() {
+    return x;
+  }
+}
+
+function inCorrectlyTaggedDuplicatedClosure() {
+  const x = 5;
+  const y = 7;
+  // eslint-no-implicit-closure (y)
+  function foo() {
+    return x + y + y;
+  }
+  // eslint-no-implicit-closure ()
+  function bar() {
+    return x;
+  }
+}
+
+
 
 // run the tests
 
@@ -66,7 +94,7 @@ const ruleTester = new RuleTester({
   parserOptions: { ecmaVersion: 2017 },
 });
 
-ruleTester.run("no-tagged-closures", rules["no-tagged-closures"], {
+ruleTester.run("no-implicit-closures", noImplicitClosure, {
   valid: [
     {
       code: closureWithoutTag.toString(),
@@ -74,6 +102,9 @@ ruleTester.run("no-tagged-closures", rules["no-tagged-closures"], {
     {
       code: closureWithinTaggedScope.toString(),
     },
+    {
+      code: correctlyTaggedDuplicatedClosure.toString()
+    }
   ],
   invalid: [
     {
@@ -130,5 +161,15 @@ ruleTester.run("no-tagged-closures", rules["no-tagged-closures"], {
       options: [{ reference: "never" }],
       errors: [{ messageId: "declaration" }, { messageId: "function" }],
     },
+    {
+      code: inCorrectlyTaggedDuplicatedClosure.toString(),
+      errors: [
+        { messageId: "declaration" },
+        { messageId: "function" },
+        { messageId: "reference" },
+        { messageId: "function" },
+        { messageId: "reference" },
+      ],
+    }
   ],
 });

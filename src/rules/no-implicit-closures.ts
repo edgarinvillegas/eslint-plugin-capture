@@ -2,12 +2,15 @@ import { AST, Rule, Scope } from "eslint";
 import * as ESTree from "estree";
 
 /** regex for a tagged comment */
-const tagged = /^\s*eslint-no-closure\b/;
+// const tagged = /^\s*eslint-no-implicit-closure\b/;
+const taggedVarsRe = /^\s*eslint-no-implicit-closure(\s*\((.*)\))?/;
+// a.match(/^\s*sagaz(\s*\((.*)\))?/)[2]
+// .match(/^\s*eslint-no-implicit-closure\s*\((.*)\)/)[1].split(',')
 
 /** test if one range is inside another, used to see if variable in scope */
 function isInsideRange(
-  outer: [number, number],
-  inner: [number, number]
+    outer: [number, number],
+    inner: [number, number]
 ): boolean {
   return outer[0] <= inner[0] && inner[1] <= outer[1];
 }
@@ -21,12 +24,12 @@ function summarizeVariables(variables: Iterable<Scope.Variable>): string {
   return sortedNames.join(", ");
 }
 
-const noTaggedClosures: Rule.RuleModule = {
+const noImplicitClosures: Rule.RuleModule = {
   meta: {
     type: "problem",
     docs: {
       description:
-        "disallow closing around variables for functions tagged with `eslint-no-closure`",
+          "disallow closing around variables for functions tagged with `eslint-no-closure`",
       category: "Variables",
       recommended: false,
       url: "https://github.com/erikbrinkman/eslint-plugin-no-closure",
@@ -34,11 +37,11 @@ const noTaggedClosures: Rule.RuleModule = {
     messages: {
       noScope: "tagged a function without a scope",
       reference:
-        "reference to variable {{ variable }} in an `eslint-no-closure` function",
+          "reference to variable {{ variable }} in an `eslint-no-closure` function",
       function:
-        "function tagged with `eslint-no-closure` closes variables: {{ variables }}",
+          "function tagged with `eslint-no-closure` closes variables: {{ variables }}",
       declaration:
-        "declared variable {{ variable }} referenced in an `eslint-no-closure` function",
+          "declared variable {{ variable }} referenced in an `eslint-no-closure` function",
     },
     schema: [
       {
@@ -69,13 +72,26 @@ const noTaggedClosures: Rule.RuleModule = {
       } = {},
     ] = context.options;
 
+    function getTaggedVars(comment: string): string[] | null {
+      const matches = comment.match(taggedVarsRe);
+      if (matches === null) return null;
+      const str_vars = matches[2];
+      if (!str_vars) return [];
+      return str_vars.split(',').map(x => x.trim());
+    }
+
     /** return if a node is considered tagged */
-    function isTagged(node: ESTree.Node): boolean {
+    function isTagged(node: ESTree.Node): string[] | null {
       // first we check if any preceeding comments start with the line
       const comments = sourceCode.getCommentsBefore(node);
       for (const comment of comments || []) {
-        if (tagged.test(comment.value)) {
+        /*if (tagged.test(comment.value)) {
           return true;
+        }*/
+        const taggedVars = getTaggedVars(comment.value);
+        if (taggedVars) {
+          // console.log('taggedVars: ', taggedVars);
+          return taggedVars;
         }
       }
 
@@ -87,41 +103,32 @@ const noTaggedClosures: Rule.RuleModule = {
           includeComments: true,
           filter(token: AST.Token | ESTree.Comment): boolean {
             return (
-              token.type === "Line" ||
-              !token.loc ||
-              // NOTE this last part is so we stop early
-              token.loc.end.line + 1 < nline
+                token.type === "Line" ||
+                !token.loc ||
+                // NOTE this last part is so we stop early
+                token.loc.end.line + 1 < nline
             );
           },
         }) as AST.Token | ESTree.Comment | null; // TODO this eslint typing is wrong
+
+        let taggedVars;
         if (
-          token &&
-          token.loc &&
-          token.loc.end.line + 1 === nline &&
-          tagged.test(token.value)
+            token &&
+            token.loc &&
+            token.loc.end.line + 1 === nline &&
+            // tagged.test(token.value)
+            (taggedVars = getTaggedVars(token.value))
         ) {
-          return true;
+          // console.log('taggedVars: ', taggedVars);
+          // return true;
+          return taggedVars;
         }
       }
 
-      return false;
+      return null;
     }
 
-    /** the generic check function */
-    function checkFunction(node: ESTree.Node & Rule.NodeParentExtension): void {
-      if (!isTagged(node)) return;
-
-      // get the function scope
-      const functionScope = manager.acquire(node);
-      const funcRange = node.range;
-      if (!functionScope || !funcRange) {
-        context.report({
-          node,
-          messageId: "noScope",
-        });
-        return;
-      }
-
+    function getClosedVariables(functionScope: Scope.Scope, funcRange: [number, number], taggedVariables: string[]) {
       // all variables that this scope closes
       const closedVariables = new Set<Scope.Variable>();
 
@@ -134,13 +141,14 @@ const noTaggedClosures: Rule.RuleModule = {
         for (const ref of scope.references) {
           const variable = ref.resolved;
           if (!variable) continue; // no definition, so can't close
+          if (taggedVariables.includes(variable.name)) continue; // tagged variable, ignore
           const closedDefs = new Set(
-            variable.defs.filter(
-              // last check ignores typescript type closures
-              (def) =>
-                !isInsideRange(funcRange, def.node.range) &&
-                (def.type as unknown) !== "Type"
-            )
+              variable.defs.filter(
+                  // last check ignores typescript type closures
+                  (def) =>
+                      !isInsideRange(funcRange, def.node.range) &&
+                      (def.type as unknown) !== "Type",
+              ),
           );
           if (!closedDefs.size) continue; // not closed
 
@@ -159,11 +167,34 @@ const noTaggedClosures: Rule.RuleModule = {
           }
         }
       }
+      return closedVariables;
+    }
 
+    /** the generic check function */
+    function checkFunction(node: ESTree.Node & Rule.NodeParentExtension): void {
+      if (isTagged(node) === null) return;
+
+      // get the function scope
+      const functionScope = manager.acquire(node);
+      const funcRange = node.range;
+      if (!functionScope || !funcRange) {
+        context.report({
+          node,
+          messageId: "noScope",
+        });
+        return;
+      }
+
+      const taggedVariables: string[] = isTagged(node)!;
+      const closedVariables = getClosedVariables(functionScope, funcRange, taggedVariables);
       // if we closed some variables, record that for the function
       if (closedVariables.size) {
         closedFuncs.set(node, closedVariables);
       }
+      /*const forbiddenVariables = new Set([...closedVariables].filter(x => !taggedVariables.includes(x.name)));
+      if (forbiddenVariables.size) {
+        closedFuncs.set(node, forbiddenVariables);
+      }*/
     }
 
     return {
@@ -195,6 +226,4 @@ const noTaggedClosures: Rule.RuleModule = {
   },
 };
 
-export const rules = {
-  "no-tagged-closures": noTaggedClosures,
-};
+export default noImplicitClosures;
