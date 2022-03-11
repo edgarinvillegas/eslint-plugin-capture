@@ -1,36 +1,50 @@
-# ESLint plugin tutorial
+# eslint-plugin-capture
 
-## What's this?
+Eslint plugin to force specifying closure variables explicitely 
+(aka captured variables, hence the plugin name)
 
-This is an example repository to explain how to create your ESLint rules.
+## Installation
 
-## Why should we learn how to create custom ESLint rules?
+`yarn add -D eslint-plugin-capture`
 
-Lint rules help to keep our codes' quality constant. Automatic code checking brings time for more productive activities, and also eliminates indivisual effects from code review.
+### Usage
 
-Creating ESLint rules is a good subject to learn AST(Abstract Syntax Tree) analysis. Today, analysis of AST is the foundation of the JavaScript build ecosystem. There are many libraries using AST, such as Babel plugins, custom TypeScript transformers, prettier, webpack and so on. Your team's JavaScript gets improved significantly if you can control AST freely!
+Examples of **correct** code for this rule
+```js
+  const x = 5;
+  const y = 7;
+  // eslint-capture (x)
+  function bar() {
+      return x;
+  }
+  
+  // eslint-capture (x,y)
+  function foo() {
+    const z = 9;
+    return x + y + z;
+  }
+  
+  // eslint-capture
+  function baz() {
+    const z = 9;
+    return z;
+  }
+```
 
-## Tutorial
+Examples of **incorrect** code for this rule
+```js
+  const x = 5;
+  const y = 7;
+  
+  // eslint-capture (x)
+  function foo() {
+    const z = 9;
+    return x + y + z;  // Error: y was not specified in capture list
+  }
 
-[See guides](./guide/README.md).
+  // eslint-capture
+  function bar() {
+     return x;  // Error: x was not specified in capture list
+  }
+```
 
-## Getting started
-
-This repository is also designed to work as a project template for custom ESLint rules.
-
-If you want to start quickly, follow the procedure below:
-
-- Clone this repository
-- Remove `.git` and `guide` dirs
-- Change pkg name via edit `package.json`
-- Change and test rule codes under `src/rules` dir
-
-This repository includes:
-
-- TypeScript setting
-- Jest
-- GitHub actions configuration
-
-## LICENSE
-
-MIT

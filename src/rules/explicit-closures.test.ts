@@ -65,7 +65,8 @@ function correctlyTaggedDuplicatedClosure() {
   const y = 7;
   // eslint-capture (x,y)
   function foo() {
-    return x + y + y;
+    const z = 9;
+    return x + y + y + z;
   }
   // eslint-capture (x)
   function bar() {
@@ -80,7 +81,7 @@ function inCorrectlyTaggedDuplicatedClosure() {
   function foo() {
     return x + y + y;
   }
-  // eslint-capture ()
+  // eslint-capture
   function bar() {
     return x;
   }
