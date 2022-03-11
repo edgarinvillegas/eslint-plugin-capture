@@ -87,8 +87,6 @@ function inCorrectlyTaggedDuplicatedClosure() {
   }
 }
 
-
-
 // run the tests
 
 const ruleTester = new RuleTester({
@@ -104,33 +102,21 @@ ruleTester.run("no-implicit-closures", noImplicitClosure, {
       code: closureWithinTaggedScope.toString(),
     },
     {
-      code: correctlyTaggedDuplicatedClosure.toString()
-    }
+      code: correctlyTaggedDuplicatedClosure.toString(),
+    },
   ],
   invalid: [
     {
       code: taggedClosure.toString(),
-      errors: [
-        { messageId: "declaration" },
-        { messageId: "function" },
-        { messageId: "reference" },
-      ],
+      errors: [{ messageId: "declaration" }, { messageId: "function" }, { messageId: "reference" }],
     },
     {
       code: taggedArrowClosure.toString(),
-      errors: [
-        { messageId: "declaration" },
-        { messageId: "function" },
-        { messageId: "reference" },
-      ],
+      errors: [{ messageId: "declaration" }, { messageId: "function" }, { messageId: "reference" }],
     },
     {
       code: taggedExpressionClosure.toString(),
-      errors: [
-        { messageId: "declaration" },
-        { messageId: "function" },
-        { messageId: "reference" },
-      ],
+      errors: [{ messageId: "declaration" }, { messageId: "function" }, { messageId: "reference" }],
     },
     {
       // this tests that functions and declarations are only reported once,
@@ -171,6 +157,6 @@ ruleTester.run("no-implicit-closures", noImplicitClosure, {
         { messageId: "function" },
         { messageId: "reference" },
       ],
-    }
+    },
   ],
 });

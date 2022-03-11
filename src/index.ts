@@ -1,4 +1,4 @@
-import explicitClosures from './rules/explicit-closures';
+import explicitClosures from "./rules/explicit-closures";
 
 export = {
   rules: {

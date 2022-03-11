@@ -5,16 +5,13 @@ import * as ESTree from "estree";
 const taggedVarsRe = /^\s*eslint-capture(\s*\((.*)\))?/;
 
 /** test if one range is inside another, used to see if variable in scope */
-function isInsideRange(
-    outer: [number, number],
-    inner: [number, number]
-): boolean {
+function isInsideRange(outer: [number, number], inner: [number, number]): boolean {
   return outer[0] <= inner[0] && inner[1] <= outer[1];
 }
 
 /** summarize an array of variables for reporting */
 function summarizeVariables(variables: Iterable<Scope.Variable>): string {
-  const sortedNames = [...variables].map((v) => v.name).sort();
+  const sortedNames = [...variables].map(v => v.name).sort();
   if (sortedNames.length > 4) {
     sortedNames.splice(2, sortedNames.length - 3, "...");
   }
@@ -25,20 +22,16 @@ const explicitClosures: Rule.RuleModule = {
   meta: {
     type: "problem",
     docs: {
-      description:
-          "disallow closing around variables for functions tagged with `eslint-capture`",
+      description: "disallow closing around variables for functions tagged with `eslint-capture`",
       category: "Variables",
       recommended: false,
       url: "https://github.com/edgarinvillegas/eslint-plugin-capture",
     },
     messages: {
       noScope: "tagged a function without a scope",
-      reference:
-          "reference to variable {{ variable }} in an `eslint-capture` function",
-      function:
-          "function tagged with `eslint-capture` closes variables: {{ variables }}",
-      declaration:
-          "declared variable {{ variable }} referenced in an `eslint-capture` function",
+      reference: "reference to variable {{ variable }} in an `eslint-capture` function",
+      function: "function tagged with `eslint-capture` closes variables: {{ variables }}",
+      declaration: "declared variable {{ variable }} referenced in an `eslint-capture` function",
     },
     schema: [
       {
@@ -74,7 +67,7 @@ const explicitClosures: Rule.RuleModule = {
       if (matches === null) return null;
       const str_vars = matches[2];
       if (!str_vars) return [];
-      return str_vars.split(',').map(x => x.trim());
+      return str_vars.split(",").map(x => x.trim());
     }
 
     /** return the tagged variables a node has */
@@ -99,21 +92,21 @@ const explicitClosures: Rule.RuleModule = {
           includeComments: true,
           filter(token: AST.Token | ESTree.Comment): boolean {
             return (
-                token.type === "Line" ||
-                !token.loc ||
-                // NOTE this last part is so we stop early
-                token.loc.end.line + 1 < nline
+              token.type === "Line" ||
+              !token.loc ||
+              // NOTE this last part is so we stop early
+              token.loc.end.line + 1 < nline
             );
           },
         }) as AST.Token | ESTree.Comment | null; // TODO this eslint typing is wrong
 
         let taggedVars;
         if (
-            token &&
-            token.loc &&
-            token.loc.end.line + 1 === nline &&
-            // tagged.test(token.value)
-            (taggedVars = getTaggedVars(token.value))
+          token &&
+          token.loc &&
+          token.loc.end.line + 1 === nline &&
+          // tagged.test(token.value)
+          (taggedVars = getTaggedVars(token.value))
         ) {
           // return true;
           return taggedVars;
@@ -138,22 +131,20 @@ const explicitClosures: Rule.RuleModule = {
           if (!variable) continue; // no definition, so can't close
           if (taggedVariables.includes(variable.name)) continue; // tagged variable, ignore
           const closedDefs = new Set(
-              variable.defs.filter(
-                  // last check ignores typescript type closures
-                  (def) =>
-                      !isInsideRange(funcRange, def.node.range) &&
-                      (def.type as unknown) !== "Type",
-              ),
+            variable.defs.filter(
+              // last check ignores typescript type closures
+              def => !isInsideRange(funcRange, def.node.range) && (def.type as unknown) !== "Type",
+            ),
           );
           if (!closedDefs.size) continue; // not closed
 
           // report immediate reference
           reportReferences === "always" &&
-          context.report({
-            node: ref.identifier,
-            messageId: "reference",
-            data: { variable: variable.name },
-          });
+            context.report({
+              node: ref.identifier,
+              messageId: "reference",
+              data: { variable: variable.name },
+            });
           // store function reference
           reportFunctions === "always" && closedVariables.add(variable);
           // store definitions
