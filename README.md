@@ -7,6 +7,21 @@ Eslint plugin to force specifying closure variables explicitely
 
 `yarn add -D eslint-plugin-capture`
 
+In your .eslintrc.js file or equivalent:
+
+```js
+plugins: [
+    ...
+    'capture'
+  ],
+  rules: {
+    ...
+    'capture/explicit-closures': 'error',
+  }
+  ...
+]
+```
+
 ### Usage
 
 Examples of **correct** code for this rule
