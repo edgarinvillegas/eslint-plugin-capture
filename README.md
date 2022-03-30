@@ -3,9 +3,77 @@
 Eslint plugin to force specifying closure variables explicitely
 (aka captured variables, hence the plugin name)
 
+## Rationale
+Closures are a great feature in programming languages. They allow you to use outer variables 
+in a function.
+
+For example:
+```js
+function outerFunc() {
+    const outerVar = 1
+    function innerFunc() {
+        const innerVar = 2
+        return innerVar + outerVar  // Here we can access outerVar
+    }
+}
+```
+This is very handy. However, it can be error prone given it's not explicit that 
+we're using `outerVar` inside `innerFunc`. To know we use outer vars, we have
+to read the full function body...
+
+If, let's say I refactor and extract `innerFunc` outside, we would get an error.
+```js
+function outerFunc() {
+    const outerVar = 1
+}
+function previouslyInnerFunc() {
+    const innerVar = 2
+    return innerVar + outerVar  // Error, outerVar is not defined
+}
+```
+(This could be needed for several reasons, to make a function independent, serializable, pure, etc)
+
+We could have prevented this if the closure variable (`outerVar`), also named 
+**captured variable** had been explicitly stated in some way. In other programming languages, 
+like Rust or C++ there are language constructs to specify this.
+
+There's no language construct for this in Javascript/Typescript, and there's where this plugin
+comes into play, by just adding a comment:
+
+```js
+function outerFunc() {
+    const outerVar = 1
+    // eslint-capture(outerVar)
+    function innerFunc() {
+        const innerVar = 2
+        return innerVar + outerVar  
+    }
+}
+```
+By adding `// eslint-capture` comment we force to specify all the captured variables in 
+parenthesis, in this case `eslint(outerVar)`. With this, **we no longer need
+to read the function body to know we use closures or not**. We have this info in the comment.
+
+Add `eslint-capture` comment to all your functions and you'll be forced to specify 
+all capture variables. IMHO, this increases code quality. 
+
+Needless to say, this also works with class methods and arrow functions.
+
+```js
+// eslint-capture(outerVar1, outerVar2)
+const innerFunc = () => {
+    const innerVar = 2
+    return innerVar + outerVar1 + outerVar2
+}
+```
+
 ## Installation
 
 `yarn add -D eslint-plugin-capture`
+
+Or with npm:
+
+`npm install eslint-plugin-capture --save-dev`
 
 In your .eslintrc.js file or equivalent:
 
