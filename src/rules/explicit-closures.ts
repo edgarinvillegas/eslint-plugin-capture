@@ -133,7 +133,7 @@ const explicitClosures: Rule.RuleModule = {
           const closedDefs = new Set(
             variable.defs.filter(
               // last check ignores typescript type closures
-              def => !isInsideRange(funcRange, def.node.range) && (def.type as unknown) !== "Type",
+              def => !isInsideRange(funcRange, def.node.range) && !(def as any).isTypeDefinition, // TODO: avoid any
             ),
           );
           if (!closedDefs.size) continue; // not closed

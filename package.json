@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-capture",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Eslint plugin to force specifying captured variables in a closure",
   "repository": "https://github.com/edgarinvillegas/eslint-plugin-capture",
   "main": "lib/index.js",
